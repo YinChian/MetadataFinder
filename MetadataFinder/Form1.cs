@@ -1,8 +1,3 @@
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Text;
-using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -14,7 +9,7 @@ namespace MetadataFinder
         private string _imageLoadingDir = "";
         private bool _isTouched;
         private int _fileCount;
-        private List<string> _metaData = new();
+        private readonly List<string> _metaData = new();
 
         private void ImageDataFetchProc()
         {
@@ -167,11 +162,8 @@ namespace MetadataFinder
                     mainPart.Document.AppendChild(new Body());
 
                     var table = new Table();
-
                     var tp = new TableProperties(
-                        //指定田字形六條線的樣式及線寬
                         new TableBorders(
-                            //Size 單位為 1/8 點 [註]
                             new TopBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
                             new BottomBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
                             new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
@@ -191,9 +183,8 @@ namespace MetadataFinder
                         for (var j = 0; j < ColumNumPickup.Value; j++)
                         {
                             var cell = new TableCell();
-
-                            var photo_index = i / 2 * (int)ColumNumPickup.Value + j;
-                            if (photo_index < _metaData.Count)
+                            var photoIndex = i / 2 * (int)ColumNumPickup.Value + j;
+                            if (photoIndex < _metaData.Count)
                             {
                                 if (i % 2 == 0)
                                 {
@@ -211,7 +202,7 @@ namespace MetadataFinder
                                     // Put description
 
                                     var run = new Run();
-                                    var lines = _metaData[photo_index].Split(Environment.NewLine);
+                                    var lines = _metaData[photoIndex].Split(Environment.NewLine);
                                     run.AppendChild(new Text(lines[0]));
                                     for (var ii = 1; ii < lines.Length - 1; ii++)
                                     {
