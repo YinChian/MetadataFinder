@@ -58,7 +58,7 @@
             ExportTXTButton.Location = new Point(289, 526);
             ExportTXTButton.Margin = new Padding(4);
             ExportTXTButton.Name = "ExportTXTButton";
-            ExportTXTButton.Size = new Size(163, 29);
+            ExportTXTButton.Size = new Size(334, 29);
             ExportTXTButton.TabIndex = 1;
             ExportTXTButton.Text = "轉出文字檔";
             ExportTXTButton.UseVisualStyleBackColor = true;
@@ -66,7 +66,8 @@
             // 
             // ExportWordButton
             // 
-            ExportWordButton.Location = new Point(460, 526);
+            ExportWordButton.Enabled = false;
+            ExportWordButton.Location = new Point(289, 563);
             ExportWordButton.Margin = new Padding(4);
             ExportWordButton.Name = "ExportWordButton";
             ExportWordButton.Size = new Size(163, 29);
@@ -113,18 +114,18 @@
             // 
             // ColumNumPickup
             // 
-            ColumNumPickup.Location = new Point(505, 563);
+            ColumNumPickup.Location = new Point(505, 566);
             ColumNumPickup.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
             ColumNumPickup.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             ColumNumPickup.Name = "ColumNumPickup";
             ColumNumPickup.Size = new Size(118, 27);
             ColumNumPickup.TabIndex = 7;
-            ColumNumPickup.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            ColumNumPickup.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(460, 565);
+            label1.Location = new Point(460, 568);
             label1.Name = "label1";
             label1.Size = new Size(39, 19);
             label1.TabIndex = 8;
