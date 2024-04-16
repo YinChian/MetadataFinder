@@ -103,6 +103,7 @@
             // 
             // RefreshButton
             // 
+            RefreshButton.Enabled = false;
             RefreshButton.Location = new Point(460, 15);
             RefreshButton.Margin = new Padding(4);
             RefreshButton.Name = "RefreshButton";
@@ -114,6 +115,7 @@
             // 
             // ColumNumPickup
             // 
+            ColumNumPickup.Enabled = false;
             ColumNumPickup.Location = new Point(505, 566);
             ColumNumPickup.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
             ColumNumPickup.Minimum = new decimal(new int[] { 1, 0, 0, 0 });

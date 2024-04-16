@@ -16,7 +16,20 @@ namespace MetadataFinder
             OutputBox.Clear();
 
             var imageFiles = Directory.GetFiles(_imageLoadingDir, "*.jpg");
-            
+
+            if (imageFiles.Length > 50)
+            {
+                var responseResult = MessageBox.Show(
+                    @"您正在開啟大量圖片檔案！這樣做我無法保證程式的穩定性，您確定要繼續嗎？", 
+                    @"大量開啟警告", 
+                    MessageBoxButtons.YesNo, 
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button2
+                    );
+
+                if (responseResult == DialogResult.No) return;
+            }
+
             foreach (var imagePath in imageFiles)
             {
 
@@ -96,6 +109,8 @@ namespace MetadataFinder
                     _fileCount++;
 
                     _isTouched = true;
+                    ColumNumPickup.Enabled = true;
+                    RefreshButton.Enabled = true;
                     ExportTXTButton.Enabled = true;
                     ExportWordButton.Enabled = true;
                 }
