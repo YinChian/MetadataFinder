@@ -1,14 +1,16 @@
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Text;
+
 
 namespace MetadataFinder
 {
     public partial class MainWindow : Form
     {
         private string _imageLoadingDir = "";
-        private bool _isTouched;
-        private int _fileCount;
+        //private bool _isTouched;
+        //private int _fileCount;
         private readonly List<string> _metaData = new();
 
         private void ImageDataFetchProc()
@@ -16,6 +18,19 @@ namespace MetadataFinder
             OutputBox.Clear();
 
             var imageFiles = Directory.GetFiles(_imageLoadingDir, "*.jpg");
+
+            if(imageFiles.Length > 50)
+            {
+                var result = MessageBox.Show(
+                    @"您正在開啟大量的檔案！我將無法保證功能的穩定性，您確定要繼續嗎？",
+                    @"檔案大量開啟警告",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2
+                    );
+
+                if (result == DialogResult.No) return;
+            }
             
             foreach (var imagePath in imageFiles)
             {
@@ -32,6 +47,14 @@ namespace MetadataFinder
                     {
                         switch (propertyItem.Id)
                         {
+                            // 時間
+                            case 0x0132:
+                                {
+                                    var dateTaken = Encoding.UTF8.GetString(propertyItem.Value).Replace("\0", string.Empty);
+                                    metaData += $@"拍攝時間: {dateTaken}";
+                                    metaData += Environment.NewLine;
+                                    break;
+                                }
                             // 焦段
                             case 0x920A:
                                 {
@@ -93,9 +116,10 @@ namespace MetadataFinder
                     _metaData.Add(metaData);
                     OutputBox.Text += metaData;
                     OutputBox.Text += Environment.NewLine;
-                    _fileCount++;
+                    //_fileCount++;
 
-                    _isTouched = true;
+                    //_isTouched = true;
+                    RefreshButton.Enabled = true;
                     ExportTXTButton.Enabled = true;
                     ExportWordButton.Enabled = true;
                 }
@@ -175,7 +199,7 @@ namespace MetadataFinder
                     tp.AppendChild(new TableWidth() { Width = "100%" });
                     table.AppendChild(tp);
 
-                    var totalRow = (int)Math.Ceiling(_fileCount / (double)ColumNumPickup.Value) * 2;
+                    var totalRow = (int)Math.Ceiling(_metaData.Count / (double)ColumNumPickup.Value) * 2;
 
                     for (var i = 0; i < totalRow; i++)
                     {
