@@ -43,10 +43,9 @@
             // 
             // OpenFileButton
             // 
-            OpenFileButton.Location = new Point(15, 15);
-            OpenFileButton.Margin = new Padding(4);
+            OpenFileButton.Location = new Point(12, 12);
             OpenFileButton.Name = "OpenFileButton";
-            OpenFileButton.Size = new Size(437, 29);
+            OpenFileButton.Size = new Size(340, 23);
             OpenFileButton.TabIndex = 0;
             OpenFileButton.Text = "開啟資料夾...";
             OpenFileButton.UseVisualStyleBackColor = true;
@@ -55,10 +54,9 @@
             // ExportTXTButton
             // 
             ExportTXTButton.Enabled = false;
-            ExportTXTButton.Location = new Point(289, 526);
-            ExportTXTButton.Margin = new Padding(4);
+            ExportTXTButton.Location = new Point(225, 415);
             ExportTXTButton.Name = "ExportTXTButton";
-            ExportTXTButton.Size = new Size(334, 29);
+            ExportTXTButton.Size = new Size(260, 23);
             ExportTXTButton.TabIndex = 1;
             ExportTXTButton.Text = "轉出文字檔";
             ExportTXTButton.UseVisualStyleBackColor = true;
@@ -67,10 +65,9 @@
             // ExportWordButton
             // 
             ExportWordButton.Enabled = false;
-            ExportWordButton.Location = new Point(289, 563);
-            ExportWordButton.Margin = new Padding(4);
+            ExportWordButton.Location = new Point(225, 444);
             ExportWordButton.Name = "ExportWordButton";
-            ExportWordButton.Size = new Size(163, 29);
+            ExportWordButton.Size = new Size(127, 23);
             ExportWordButton.TabIndex = 2;
             ExportWordButton.Text = "轉出Word檔";
             ExportWordButton.UseVisualStyleBackColor = true;
@@ -80,13 +77,12 @@
             // 
             OutputBox.AcceptsReturn = true;
             OutputBox.BorderStyle = BorderStyle.FixedSingle;
-            OutputBox.Location = new Point(15, 52);
-            OutputBox.Margin = new Padding(4);
+            OutputBox.Location = new Point(12, 41);
             OutputBox.Multiline = true;
             OutputBox.Name = "OutputBox";
             OutputBox.ReadOnly = true;
             OutputBox.ScrollBars = ScrollBars.Both;
-            OutputBox.Size = new Size(608, 466);
+            OutputBox.Size = new Size(473, 368);
             OutputBox.TabIndex = 3;
             // 
             // FocalSelector
@@ -95,19 +91,17 @@
             FocalSelector.FlatStyle = FlatStyle.System;
             FocalSelector.FormattingEnabled = true;
             FocalSelector.Items.AddRange(new object[] { "全片幅 (不使用等校焦段)", "Nikon APS-C 片幅 (1.5倍)", "Nikon CX 片幅 (1.7倍)", "Canon APS-H 片幅 (1.3倍)", "Canon APS-C 片幅 (1.6倍)", "Sony APS-C 片幅 (1.5倍)" });
-            FocalSelector.Location = new Point(13, 528);
-            FocalSelector.Margin = new Padding(4);
+            FocalSelector.Location = new Point(10, 417);
             FocalSelector.Name = "FocalSelector";
-            FocalSelector.Size = new Size(268, 27);
+            FocalSelector.Size = new Size(209, 23);
             FocalSelector.TabIndex = 5;
             // 
             // RefreshButton
             // 
             RefreshButton.Enabled = false;
-            RefreshButton.Location = new Point(460, 15);
-            RefreshButton.Margin = new Padding(4);
+            RefreshButton.Location = new Point(358, 12);
             RefreshButton.Name = "RefreshButton";
-            RefreshButton.Size = new Size(163, 29);
+            RefreshButton.Size = new Size(127, 23);
             RefreshButton.TabIndex = 6;
             RefreshButton.Text = "重新讀取";
             RefreshButton.UseVisualStyleBackColor = true;
@@ -115,29 +109,29 @@
             // 
             // ColumNumPickup
             // 
-            ColumNumPickup.Enabled = false;
             ColumNumPickup.Location = new Point(505, 566);
             ColumNumPickup.Maximum = new decimal(new int[] { 5, 0, 0, 0 });
             ColumNumPickup.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             ColumNumPickup.Name = "ColumNumPickup";
-            ColumNumPickup.Size = new Size(118, 27);
+            ColumNumPickup.Size = new Size(92, 23);
             ColumNumPickup.TabIndex = 7;
             ColumNumPickup.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(460, 568);
+            label1.Location = new Point(358, 448);
+            label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
-            label1.Size = new Size(39, 19);
+            label1.Size = new Size(31, 15);
             label1.TabIndex = 8;
             label1.Text = "欄數";
             // 
             // MainWindow
             // 
-            AutoScaleDimensions = new SizeF(9F, 19F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(639, 602);
+            ClientSize = new Size(497, 475);
             Controls.Add(label1);
             Controls.Add(ColumNumPickup);
             Controls.Add(RefreshButton);
@@ -146,7 +140,6 @@
             Controls.Add(ExportWordButton);
             Controls.Add(ExportTXTButton);
             Controls.Add(OpenFileButton);
-            Margin = new Padding(4);
             MaximizeBox = false;
             Name = "MainWindow";
             Text = "Form1";
