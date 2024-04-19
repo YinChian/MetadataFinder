@@ -1,10 +1,10 @@
-using System.Net.Http.Headers;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text;
-using DocumentFormat.OpenXml.Vml;
-
+using A = DocumentFormat.OpenXml.Drawing;
+using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 
 namespace MetadataFinder
 {
@@ -53,7 +53,7 @@ namespace MetadataFinder
                             // 時間
                             case 0x0132:
                                 {
-                                    metaData["拍攝時間"] = Encoding.UTF8.GetString(propertyItem.Value)
+                                    metaData["拍攝時間"] = Encoding.UTF8.GetString(propertyItem.Value ?? Array.Empty<byte>())
                                         .Replace("\0", string.Empty);
                                     break;
                                 }
@@ -61,7 +61,7 @@ namespace MetadataFinder
                             // 焦段
                             case 0x920A:
                                 {
-                                    var focalLength = BitConverter.ToInt32(propertyItem.Value, 0);
+                                    var focalLength = BitConverter.ToInt32(propertyItem.Value ?? Array.Empty<byte>(), 0);
                                     
                                     metaData["焦段"] = $@"{focalLength} mm";
 
@@ -84,7 +84,7 @@ namespace MetadataFinder
                             // ISO值
                             case 0x8827:
                                 {
-                                    var iso = BitConverter.ToUInt16(propertyItem.Value, 0);
+                                    var iso = BitConverter.ToUInt16(propertyItem.Value ?? Array.Empty<byte>(), 0);
                                     metaData["ISO"] = $@"{iso}";
 
                                     break;
@@ -93,8 +93,8 @@ namespace MetadataFinder
                             // 曝光時間
                             case 0x829A:
                                 {
-                                    var numerator = BitConverter.ToUInt32(propertyItem.Value, 0);
-                                    var denominator = BitConverter.ToUInt32(propertyItem.Value, 4);
+                                    var numerator = BitConverter.ToUInt32(propertyItem.Value ?? Array.Empty<byte>(), 0);
+                                    var denominator = BitConverter.ToUInt32(propertyItem.Value ?? Array.Empty<byte>(), 4);
 
                                     if (denominator is 1 or 10)
                                     {
@@ -110,8 +110,8 @@ namespace MetadataFinder
                             // 光圈
                             case 0x829D:
                                 {
-                                    var numerator = BitConverter.ToUInt32(propertyItem.Value, 0);
-                                    var denominator = BitConverter.ToUInt32(propertyItem.Value, 4);
+                                    var numerator = BitConverter.ToUInt32(propertyItem.Value ?? Array.Empty<byte>(), 0);
+                                    var denominator = BitConverter.ToUInt32(propertyItem.Value ?? Array.Empty<byte>(), 4);
                                     var fStop = (double)numerator / denominator;
                                     metaData["光圈"] = $@"光圈: f/{fStop}";
 
@@ -143,6 +143,71 @@ namespace MetadataFinder
             }
         }
 
+        private static Drawing AddImage(string relationshipId)
+        {
+            return new Drawing(
+             new DW.Inline(
+                 new DW.Extent() { Cx = 990000L, Cy = 792000L },
+                 new DW.EffectExtent()
+                 {
+                     LeftEdge = 0L,
+                     TopEdge = 0L,
+                     RightEdge = 0L,
+                     BottomEdge = 0L
+                 },
+                 new DW.DocProperties()
+                 {
+                     Id = (UInt32Value)1U,
+                     Name = "Picture 1"
+                 },
+                 new DW.NonVisualGraphicFrameDrawingProperties(
+                     new A.GraphicFrameLocks() { NoChangeAspect = true }),
+                 new A.Graphic(
+                     new A.GraphicData(
+                         new PIC.Picture(
+                             new PIC.NonVisualPictureProperties(
+                                 new PIC.NonVisualDrawingProperties()
+                                 {
+                                     Id = (UInt32Value)0U,
+                                     Name = "New Bitmap Image.jpg"
+                                 },
+                                 new PIC.NonVisualPictureDrawingProperties()),
+                             new PIC.BlipFill(
+                                 new A.Blip(
+                                     new A.BlipExtensionList(
+                                         new A.BlipExtension()
+                                         {
+                                             Uri =
+                                                "{28A0092B-C50C-407E-A947-70E740481C1C}"
+                                         })
+                                 )
+                                 {
+                                     Embed = relationshipId,
+                                     CompressionState =
+                                     A.BlipCompressionValues.Print
+                                 },
+                                 new A.Stretch(
+                                     new A.FillRectangle())),
+                             new PIC.ShapeProperties(
+                                 new A.Transform2D(
+                                     new A.Offset() { X = 0L, Y = 0L },
+                                     new A.Extents() { Cx = 990000L, Cy = 792000L }),
+                                 new A.PresetGeometry(
+                                     new A.AdjustValueList()
+                                 )
+                                 { Preset = A.ShapeTypeValues.Rectangle }))
+                     )
+                     { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+             )
+             {
+                 DistanceFromTop = (UInt32Value)0U,
+                 DistanceFromBottom = (UInt32Value)0U,
+                 DistanceFromLeft = (UInt32Value)0U,
+                 DistanceFromRight = (UInt32Value)0U,
+                 EditId = "50D07946"
+             });
+        }
+        
 
         public MainWindow()
         {
@@ -241,7 +306,7 @@ namespace MetadataFinder
             {
                 using (var wordDocument = WordprocessingDocument.Create(saveFileDir, WordprocessingDocumentType.Document))
                 {
-                    var mainPart = wordDocument.AddMainDocumentPart();
+                    var mainPart = wordDocument.AddMainDocumentPart(); 
                     mainPart.Document = new Document();
                     mainPart.Document.AppendChild(new Body());
 
@@ -259,6 +324,7 @@ namespace MetadataFinder
                     tp.AppendChild(new TableWidth() { Width = "100%" });
                     table.AppendChild(tp);
 
+
                     for (var i = 0; i < totalRow; i++)
                     {
                         var row = new TableRow();
@@ -270,11 +336,20 @@ namespace MetadataFinder
                             {
                                 if (i % 2 == 0)
                                 {
+                                    var imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
+
+                                    using (var stream = new FileStream(_imageMetaList[photoIndex]["檔案名稱"], FileMode.Open))
+                                    {
+                                        imagePart.FeedData(stream);
+                                    }
+
+                                    
+
                                     // Put image
                                     cell.Append(
                                         new Paragraph(
                                             new Run(
-                                                new Text("")
+                                                AddImage(mainPart.GetIdOfPart(imagePart))
                                             )
                                         )
                                     );
@@ -301,15 +376,14 @@ namespace MetadataFinder
                         table.Append(row);
                     }
 
-                    mainPart.Document.Body.AppendChild(table);
-
+                    mainPart.Document.Body?.AppendChild(table);
 
                     mainPart.Document.Save();
                 }
             }
             catch (System.IO.IOException)
             {
-                MessageBox.Show(@"請先將輸出文件關閉！", @"錯誤", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                MessageBox.Show(@"請先將輸出文件關閉，或將檔案資料夾關掉！", @"錯誤", MessageBoxButtons.OK, MessageBoxIcon.Hand);
             }
         }
 
