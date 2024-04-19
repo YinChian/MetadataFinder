@@ -302,88 +302,97 @@ namespace MetadataFinder
             }
 
             var totalRow = (int)Math.Ceiling(_imageMetaList.Count / (double)ColumNumPickup.Value) * 2;
-            try
+
+            
+            while (true)
             {
-                using (var wordDocument = WordprocessingDocument.Create(saveFileDir, WordprocessingDocumentType.Document))
+                try
                 {
-                    var mainPart = wordDocument.AddMainDocumentPart(); 
-                    mainPart.Document = new Document();
-                    mainPart.Document.AppendChild(new Body());
-
-                    var table = new Table();
-                    var tp = new TableProperties(
-                        new TableBorders(
-                            new TopBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                            new BottomBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                            new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                            new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                            new InsideHorizontalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                            new InsideVerticalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 }
-                        )
-                    );
-                    tp.AppendChild(new TableWidth() { Width = "100%" });
-                    table.AppendChild(tp);
-
-
-                    for (var i = 0; i < totalRow; i++)
+                    using (var wordDocument = WordprocessingDocument.Create(saveFileDir, WordprocessingDocumentType.Document))
                     {
-                        var row = new TableRow();
-                        for (var j = 0; j < ColumNumPickup.Value; j++)
+                        var mainPart = wordDocument.AddMainDocumentPart();
+                        mainPart.Document = new Document();
+                        mainPart.Document.AppendChild(new Body());
+
+                        var table = new Table();
+                        var tp = new TableProperties(
+                            new TableBorders(
+                                new TopBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                                new BottomBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                                new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                                new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                                new InsideHorizontalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                                new InsideVerticalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 }
+                            )
+                        );
+                        tp.AppendChild(new TableWidth() { Width = "100%" });
+                        table.AppendChild(tp);
+
+
+                        for (var i = 0; i < totalRow; i++)
                         {
-                            var cell = new TableCell();
-                            var photoIndex = i / 2 * (int)ColumNumPickup.Value + j;
-                            if (photoIndex < _imageMetaList.Count)
+                            var row = new TableRow();
+                            for (var j = 0; j < ColumNumPickup.Value; j++)
                             {
-                                if (i % 2 == 0)
+                                var cell = new TableCell();
+                                var photoIndex = i / 2 * (int)ColumNumPickup.Value + j;
+                                if (photoIndex < _imageMetaList.Count)
                                 {
-                                    var imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
-
-                                    using (var stream = new FileStream(_imageMetaList[photoIndex]["檔案名稱"], FileMode.Open))
+                                    if (i % 2 == 0)
                                     {
-                                        imagePart.FeedData(stream);
-                                    }
+                                        var imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
 
-                                    
+                                        using (var stream = new FileStream(_imageMetaList[photoIndex]["檔案名稱"], FileMode.Open))
+                                        {
+                                            imagePart.FeedData(stream);
+                                        }
 
-                                    // Put image
-                                    cell.Append(
-                                        new Paragraph(
-                                            new Run(
-                                                AddImage(mainPart.GetIdOfPart(imagePart))
+
+
+                                        // Put image
+                                        cell.Append(
+                                            new Paragraph(
+                                                new Run(
+                                                    AddImage(mainPart.GetIdOfPart(imagePart))
+                                                )
                                             )
-                                        )
-                                    );
+                                        );
+                                    }
+                                    else
+                                    {
+                                        // Put description
+                                        var run = new Run();
+                                        foreach (var meta in _imageMetaList[photoIndex].Where(meta => meta.Key is not (@"時間" or @"檔案名稱")))
+                                        {
+                                            run.AppendChild(new Text($@"{meta.Key}: {meta.Value}"));
+                                            if (meta.Key != _imageMetaList[photoIndex].Last().Key) run.AppendChild(new Break());
+                                        }
+                                        cell.Append(new Paragraph(run));
+                                    }
                                 }
                                 else
                                 {
-                                    // Put description
-                                    var run = new Run();
-                                    foreach (var meta in _imageMetaList[photoIndex].Where(meta => meta.Key is not (@"時間" or @"檔案名稱")))
-                                    {
-                                        run.AppendChild(new Text($@"{meta.Key}: {meta.Value}"));
-                                        if (meta.Key != _imageMetaList[photoIndex].Last().Key) run.AppendChild(new Break());
-                                    }
-                                    cell.Append(new Paragraph(run));
+                                    cell.Append(new Paragraph(new Run(new Text(""))));
                                 }
-                            }
-                            else
-                            {
-                                cell.Append(new Paragraph(new Run(new Text(""))));
-                            }
 
-                            row.Append(cell);
+                                row.Append(cell);
+                            }
+                            table.Append(row);
                         }
-                        table.Append(row);
+
+                        mainPart.Document.Body?.AppendChild(table);
+
+                        mainPart.Document.Save();
+                        break;
                     }
-
-                    mainPart.Document.Body?.AppendChild(table);
-
-                    mainPart.Document.Save();
                 }
-            }
-            catch (System.IO.IOException)
-            {
-                MessageBox.Show(@"請先將輸出文件關閉，或將檔案資料夾關掉！", @"錯誤", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                catch (IOException)
+                {
+                    var res = MessageBox.Show(@"請先將輸出文件關閉，或將檔案資料夾關掉！", @"錯誤", MessageBoxButtons.RetryCancel,
+                        MessageBoxIcon.Hand);
+
+                    if (res == DialogResult.Cancel) break;
+                }
             }
         }
 
