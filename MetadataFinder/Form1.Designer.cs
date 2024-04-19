@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             OpenFileButton = new Button();
             ExportTXTButton = new Button();
             ExportWordButton = new Button();
@@ -227,6 +228,7 @@
             Controls.Add(OutputBox);
             Controls.Add(OpenFileButton);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             MaximizeBox = false;
             Name = "MainWindow";

@@ -10,11 +10,40 @@ namespace MetadataFinder
 {
     public partial class MainWindow : Form
     {
-
+        public class ImageData
+        {
+            public string FileName = string.Empty;
+            public byte[] BinaryData;
+            public Stream DataStream => new MemoryStream(BinaryData);
+            public int SourceWidth;
+            public int SourceHeight;
+            public decimal Width;
+            public decimal Height;
+            public long WidthInEMU => Convert.ToInt64(Width * CM_TO_EMU);
+            public long HeightInEMU => Convert.ToInt64(Height * CM_TO_EMU);
+            private const decimal INCH_TO_CM = 2.54M;
+            private const decimal CM_TO_EMU = 360000M;
+            public string ImageName;
+            public ImageData(string fileName, byte[] data, int dpi = 300)
+            {
+                FileName = fileName;
+                BinaryData = data;
+                Bitmap img = new Bitmap(new MemoryStream(data));
+                SourceWidth = img.Width;
+                SourceHeight = img.Height;
+                Width = ((decimal)SourceWidth) / dpi * INCH_TO_CM;
+                Height = ((decimal)SourceHeight) / dpi * INCH_TO_CM;
+                ImageName = $"IMG_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            }
+            public ImageData(string fileName, int dpi = 300) :
+                this(fileName, File.ReadAllBytes(fileName), dpi)
+            {
+            }
+        }
+        
         private string _imageDir = "";
         private List<Dictionary<string, string>> _imageMetaList = new();
-
-
+        
         private List<Dictionary<string, string>> ImageDataFetchProc(string imageLoadingDir)
         {
             var metaDataList = new List<Dictionary<string, string>>();
@@ -143,69 +172,79 @@ namespace MetadataFinder
             }
         }
 
-        private static Drawing AddImage(string relationshipId)
+        private static Drawing AddImage(string relationshipId, ImageData img, int cellWidth)
         {
+            long size_x = cellWidth;
+            long size_y = (int)(((double)img.HeightInEMU / img.WidthInEMU) * cellWidth);
+            
+
             return new Drawing(
-             new DW.Inline(
-                 new DW.Extent() { Cx = 990000L, Cy = 792000L },
-                 new DW.EffectExtent()
-                 {
-                     LeftEdge = 0L,
-                     TopEdge = 0L,
-                     RightEdge = 0L,
-                     BottomEdge = 0L
-                 },
-                 new DW.DocProperties()
-                 {
-                     Id = (UInt32Value)1U,
-                     Name = "Picture 1"
-                 },
-                 new DW.NonVisualGraphicFrameDrawingProperties(
-                     new A.GraphicFrameLocks() { NoChangeAspect = true }),
-                 new A.Graphic(
-                     new A.GraphicData(
-                         new PIC.Picture(
-                             new PIC.NonVisualPictureProperties(
-                                 new PIC.NonVisualDrawingProperties()
-                                 {
-                                     Id = (UInt32Value)0U,
-                                     Name = "New Bitmap Image.jpg"
-                                 },
-                                 new PIC.NonVisualPictureDrawingProperties()),
-                             new PIC.BlipFill(
-                                 new A.Blip(
-                                     new A.BlipExtensionList(
-                                         new A.BlipExtension()
+                     new DW.Inline(
+                         //Size of image, unit = EMU(English Metric Unit)
+                         //1 cm = 360000 EMUs
+                         new DW.Extent() { Cx = size_x, Cy = size_y },
+                         new DW.EffectExtent()
+                         {
+                             LeftEdge = 0L,
+                             TopEdge = 0L,
+                             RightEdge = 0L,
+                             BottomEdge = 0L
+                         },
+                         new DW.DocProperties()
+                         {
+                             Id = (UInt32Value)1U,
+                             Name = img.ImageName
+                         },
+                         new DW.NonVisualGraphicFrameDrawingProperties(
+                             new A.GraphicFrameLocks() { NoChangeAspect = true }),
+                         new A.Graphic(
+                             new A.GraphicData(
+                                 new PIC.Picture(
+                                     new PIC.NonVisualPictureProperties(
+                                         new PIC.NonVisualDrawingProperties()
                                          {
-                                             Uri =
-                                                "{28A0092B-C50C-407E-A947-70E740481C1C}"
-                                         })
-                                 )
-                                 {
-                                     Embed = relationshipId,
-                                     CompressionState =
-                                     A.BlipCompressionValues.Print
-                                 },
-                                 new A.Stretch(
-                                     new A.FillRectangle())),
-                             new PIC.ShapeProperties(
-                                 new A.Transform2D(
-                                     new A.Offset() { X = 0L, Y = 0L },
-                                     new A.Extents() { Cx = 990000L, Cy = 792000L }),
-                                 new A.PresetGeometry(
-                                     new A.AdjustValueList()
-                                 )
-                                 { Preset = A.ShapeTypeValues.Rectangle }))
+                                             Id = (UInt32Value)0U,
+                                             Name = img.FileName
+                                         },
+                                         new PIC.NonVisualPictureDrawingProperties()),
+                                     new PIC.BlipFill(
+                                         new A.Blip(
+                                             new A.BlipExtensionList(
+                                                 new A.BlipExtension()
+                                                 {
+                                                     Uri =
+                                                        "{28A0092B-C50C-407E-A947-70E740481C1C}"
+                                                 })
+                                         )
+                                         {
+                                             Embed = relationshipId,
+                                             CompressionState =
+                                             A.BlipCompressionValues.Print
+                                         },
+                                         new A.Stretch(
+                                             new A.FillRectangle())),
+                                     new PIC.ShapeProperties(
+                                         new A.Transform2D(
+                                             new A.Offset() { X = 0L, Y = 0L },
+                                             new A.Extents()
+                                             {
+                                                 Cx = size_x,
+                                                 Cy = size_y
+                                             }),
+                                         new A.PresetGeometry(
+                                             new A.AdjustValueList()
+                                         )
+                                         { Preset = A.ShapeTypeValues.Rectangle }))
+                             )
+                             { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
                      )
-                     { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
-             )
-             {
-                 DistanceFromTop = (UInt32Value)0U,
-                 DistanceFromBottom = (UInt32Value)0U,
-                 DistanceFromLeft = (UInt32Value)0U,
-                 DistanceFromRight = (UInt32Value)0U,
-                 EditId = "50D07946"
-             });
+                     {
+                         DistanceFromTop = (UInt32Value)0U,
+                         DistanceFromBottom = (UInt32Value)0U,
+                         DistanceFromLeft = (UInt32Value)0U,
+                         DistanceFromRight = (UInt32Value)0U,
+                         EditId = "50D07946"
+                     });
         }
         
 
@@ -303,94 +342,109 @@ namespace MetadataFinder
 
             var totalRow = (int)Math.Ceiling(_imageMetaList.Count / (double)ColumNumPickup.Value) * 2;
 
-            
+            var retries = 0;
             while (true)
             {
                 try
                 {
-                    using (var wordDocument = WordprocessingDocument.Create(saveFileDir, WordprocessingDocumentType.Document))
+                    using var wordDocument = WordprocessingDocument.Create(saveFileDir, WordprocessingDocumentType.Document);
+                    var mainPart = wordDocument.AddMainDocumentPart();
+                    mainPart.Document = new Document();
+                    mainPart.Document.AppendChild(new Body());
+
+                    var table = new Table();
+                    var tp = new TableProperties(
+                        new TableBorders(
+                            new TopBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                            new BottomBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                            new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                            new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                            new InsideHorizontalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
+                            new InsideVerticalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 }
+                        )
+                    );
+
+                    // Table total width = A4 Text area (5.8 inch) - (Number of Column + 1) * line width (1 point)
+                    // DXA Width = 1/20 point = 1/1440 inch
+                    // Total width in points = 5.8 * 72 - (Num of Col. + 1) 
+                    // Total width in DXA = (Total width in points) * 20
+                    tp.AppendChild(new TableWidth() { Type = TableWidthUnitValues.Dxa, Width =
+                        ((417.6 - ((int)ColumNumPickup.Value + 1)) * 20).ToString("0.0") });
+
+                    table.AppendChild(tp);
+
+
+                    for (var i = 0; i < totalRow; i++)
                     {
-                        var mainPart = wordDocument.AddMainDocumentPart();
-                        mainPart.Document = new Document();
-                        mainPart.Document.AppendChild(new Body());
-
-                        var table = new Table();
-                        var tp = new TableProperties(
-                            new TableBorders(
-                                new TopBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                                new BottomBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                                new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                                new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                                new InsideHorizontalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 },
-                                new InsideVerticalBorder() { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 8 }
-                            )
-                        );
-                        tp.AppendChild(new TableWidth() { Width = "100%" });
-                        table.AppendChild(tp);
-
-
-                        for (var i = 0; i < totalRow; i++)
+                        var row = new TableRow();
+                        for (var j = 0; j < ColumNumPickup.Value; j++)
                         {
-                            var row = new TableRow();
-                            for (var j = 0; j < ColumNumPickup.Value; j++)
+                            var cell = new TableCell();
+                            var photoIndex = i / 2 * (int)ColumNumPickup.Value + j;
+                            if (photoIndex < _imageMetaList.Count)
                             {
-                                var cell = new TableCell();
-                                var photoIndex = i / 2 * (int)ColumNumPickup.Value + j;
-                                if (photoIndex < _imageMetaList.Count)
+                                if (i % 2 == 0)
                                 {
-                                    if (i % 2 == 0)
-                                    {
-                                        var imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
 
-                                        using (var stream = new FileStream(_imageMetaList[photoIndex]["檔案名稱"], FileMode.Open))
-                                        {
-                                            imagePart.FeedData(stream);
-                                        }
+                                    var img = new ImageData(_imageMetaList[photoIndex]["檔案名稱"]);
+                                    var imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
+                                    var relationshipId = mainPart.GetIdOfPart(imagePart);
+                                    imagePart.FeedData(img.DataStream);
+                                    
+                                    // Cell width = (5.8inch - (Number of column + 1) * table line width) / Number of Column
+                                    // 5.8 inch => 5.8 * 914400 = 5303520 EMU
+                                    var cellWidth = (5303520 - 12700 * ((int)ColumNumPickup.Value + 1)) /
+                                                    (int)ColumNumPickup.Value;
 
-
-
-                                        // Put image
-                                        cell.Append(
-                                            new Paragraph(
-                                                new Run(
-                                                    AddImage(mainPart.GetIdOfPart(imagePart))
-                                                )
+                                    // Put image
+                                    cell.Append(
+                                        new Paragraph(
+                                            new Run(
+                                                AddImage(relationshipId, img, cellWidth)
                                             )
-                                        );
-                                    }
-                                    else
-                                    {
-                                        // Put description
-                                        var run = new Run();
-                                        foreach (var meta in _imageMetaList[photoIndex].Where(meta => meta.Key is not (@"時間" or @"檔案名稱")))
-                                        {
-                                            run.AppendChild(new Text($@"{meta.Key}: {meta.Value}"));
-                                            if (meta.Key != _imageMetaList[photoIndex].Last().Key) run.AppendChild(new Break());
-                                        }
-                                        cell.Append(new Paragraph(run));
-                                    }
+                                        )
+                                    );
                                 }
                                 else
                                 {
-                                    cell.Append(new Paragraph(new Run(new Text(""))));
+                                    // Put description
+                                    var run = new Run();
+                                    foreach (var meta in _imageMetaList[photoIndex].Where(meta => meta.Key is not (@"時間" or @"檔案名稱")))
+                                    {
+                                        run.AppendChild(new Text($@"{meta.Key}: {meta.Value}"));
+                                        if (meta.Key != _imageMetaList[photoIndex].Last().Key) run.AppendChild(new Break());
+                                    }
+                                    cell.Append(new Paragraph(run));
                                 }
-
-                                row.Append(cell);
                             }
-                            table.Append(row);
+                            else
+                            {
+                                cell.Append(new Paragraph(new Run(new Text(""))));
+                            }
+
+                            row.Append(cell);
                         }
-
-                        mainPart.Document.Body?.AppendChild(table);
-
-                        mainPart.Document.Save();
-                        break;
+                        table.Append(row);
                     }
+
+                    mainPart.Document.Body?.AppendChild(table);
+
+                    mainPart.Document.Save();
+                    break;
                 }
                 catch (IOException)
                 {
-                    var res = MessageBox.Show(@"請先將輸出文件關閉，或將檔案資料夾關掉！", @"錯誤", MessageBoxButtons.RetryCancel,
-                        MessageBoxIcon.Hand);
-
+                    if (retries < 10)
+                    {
+                        retries++;
+                        continue;
+                    }
+                    var res = MessageBox.Show(
+                        @"請嘗試關閉輸入圖片、輸出文件後，再重試一遍。", 
+                        @"檔案錯誤", 
+                        MessageBoxButtons.RetryCancel,
+                        MessageBoxIcon.Hand
+                        );
                     if (res == DialogResult.Cancel) break;
                 }
             }
