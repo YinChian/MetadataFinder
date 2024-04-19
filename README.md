@@ -1,12 +1,12 @@
 # 下載方式
 * ## 方式一 - 使用無須安裝的Zip檔案
-1. 下載`Metadata`資料夾中的`publish-no-install.zip`
+1. 下載`MetadataFinder`資料夾中的`publish-no-install.zip`
 2. 解壓縮
 3. 執行`MetadataFinder.exe`
 
 * ## 方式二 - 安裝
  如果前一個方法無法執行的話，請使用此方式安裝。
-1. 下載`Metadata`資料夾中的`publish-install.zip`
+1. 下載`MetadataFinder`資料夾中的`publish-install.zip`
 2. 解壓縮
 3. 執行`setup.exe`
 4. 一直按下一步
